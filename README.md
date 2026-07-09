@@ -1,41 +1,169 @@
-# 基于集成学习XGBoost的广州二手房价格预测
-## 项目简介
-本案例使用36520条广州二手房交易数据，通过XGBoost回归模型实现房价预测，完整覆盖数据预处理、模型训练、性能评估、特征重要性可视化、新房源批量估价全流程。
-模型能够捕捉地段、学区、面积、房龄等因素对房价的非线性影响，可用于房产估值、二手房挂牌定价辅助分析。
+# Guangzhou Second-hand Housing Price Prediction Based on XGBoost
 
-## 运行环境依赖
-执行代码前需要安装依赖库，在CMD输入：
+![Python](https://img.shields.io/badge/Python-3.10-blue)
+![XGBoost](https://img.shields.io/badge/XGBoost-Regression-success)
+![Scikit-learn](https://img.shields.io/badge/Scikit--learn-Machine%20Learning-orange)
+![License](https://img.shields.io/badge/License-MIT-green)
+
+A machine learning project for predicting second-hand housing prices in Guangzhou using the XGBoost regression algorithm.
+
+---
+
+## 📖 Project Overview
+
+This project uses **36,520 second-hand housing transaction records in Guangzhou** to build an XGBoost regression model for housing price prediction.
+
+The complete machine learning workflow includes:
+
+- Data loading and preprocessing
+- Feature engineering
+- One-Hot Encoding
+- XGBoost regression model training
+- Model performance evaluation
+- Feature importance visualization
+- Batch prediction for new housing listings
+
+The model captures the nonlinear relationship between housing prices and factors such as location, school district, floor area, and building age, providing an efficient solution for real estate price estimation.
+
+---
+
+## 📂 Dataset
+
+The project uses two datasets:
+
+- **gz_housing.xlsx** — Historical housing transaction data (36,520 records)
+- **gz_housing_pred.xlsx** — New housing listings for price prediction
+
+**Prediction Target**
+
+- House Price (万元)
+
+---
+
+## 🛠 Technologies
+
+- Python
+- Pandas
+- NumPy
+- OpenPyXL
+- Matplotlib
+- Scikit-learn
+- XGBoost
+
+---
+
+## 🔍 Workflow
+
+1. Data Loading
+2. Data Preprocessing
+3. Feature Encoding
+4. Train/Test Split
+5. XGBoost Regression Model
+6. Model Evaluation
+7. Feature Importance Analysis
+8. Batch Housing Price Prediction
+
+---
+
+## 🤖 Machine Learning Model
+
+**XGBoost Regressor**
+
+Main hyperparameters:
+
+- `n_estimators = 200`
+- `learning_rate = 0.1`
+- `max_depth = 6`
+- `objective = reg:squarederror`
+
+Training/Test split ratio:
+
+- **80% Training**
+- **20% Testing**
+
+---
+
+## 📊 Model Performance
+
+| Metric | Result |
+|---------|---------|
+| R² Score | **0.9945** |
+| RMSE | **33.29** |
+
+The model explains approximately **99.45%** of the variance in housing prices, demonstrating excellent predictive performance.
+
+---
+
+## 📈 Feature Importance
+
+The XGBoost model identifies the most influential features affecting housing prices:
+
+- Location (District)
+- School District
+- Floor Area
+- Building Age
+
+Feature importance visualization helps interpret the pricing mechanism of Guangzhou's second-hand housing market.
+
+---
+
+## 📁 Project Structure
+
+```text
+Guangzhou-Housing-Price-Prediction
+│
+├── house_price_xgboost.py
+├── gz_housing.xlsx
+├── gz_housing_pred.xlsx
+├── README.md
+├── requirements.txt
+└── .gitignore
+```
+
+---
+
+## 🚀 Installation
+
+Clone this repository
+
+```bash
+git clone https://github.com/your-username/Guangzhou-Housing-Price-Prediction.git
+```
+
+Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+or
+
 ```bash
 pip install pandas numpy openpyxl scikit-learn xgboost matplotlib
+```
 
-##项目文件说明
-house_price_xgboost.py：完整 Python 主代码，包含数据处理、建模、评估绘图、批量估价全部逻辑
-gz_housing.xlsx：原始二手房训练数据集，共 36520 条样本
-gz_housing_pred.xlsx：待估价的新房源业务数据
-README.md：项目说明文档
+Run the project
 
-##项目实现步骤
-1. 数据读取与特征预处理
-读取本地 Excel 房产数据；
-对分类字段「区域类型」做独热编码，把文本类别转为计算机可识别数值；
-按照 8:2 比例拆分训练集与测试集，固定随机种子 2025，保证实验结果可复现。
-2. XGBoost 回归模型搭建
-核心超参数：
-n_estimators=200：迭代训练 200 棵决策树；
-learning_rate=0.1：小学习率提升模型泛化能力；
-max_depth=6：限制单树深度，避免过拟合；
-损失函数采用均方误差 reg:squarederror。
-3. 模型效果评估
-测试集指标：
-R² = 0.9945：模型可以解释 99.45% 的房价波动；
-RMSE = 33.29 万元：预测价格与真实成交均价平均误差小，模型精度高。
-4. 特征重要性分析与可视化
-通过 XGBoost 输出特征权重，量化各变量对房价的影响：
-区域类型（中心城区）权重最高，地段是房价决定性因素；
-是否学区房权重排第二，影响力远超房屋面积、房龄；
-验证广州二手房市场地段、学区优先于居住面积的定价逻辑。
-5. 新房源批量估价功能
-读取待挂牌房源数据，自动对齐训练集特征格式，批量生成房产估值，输出带估价结果的房源表格，适配实际中介业务场景。
+```bash
+python house_price_xgboost.py
+```
 
-##项目总结
-本项目基于 XGBoost 梯度提升树搭建自动化房产估价模型，拟合效果优秀。特征重要性分析清晰拆解房价定价逻辑，批量估价功能可直接落地用于二手房挂牌定价，为房产数据分析提供完整可复用代码方案。
+---
+
+## 📈 Results
+
+The trained XGBoost model achieves high prediction accuracy and supports automatic valuation of new housing listings.
+
+The project also provides feature importance visualization, helping analyze the key factors influencing housing prices.
+
+---
+
+## 👤 Author
+
+**GitHub:** K1kibony
+
+---
+
+## 📄 License
+
+This project is for educational and academic purposes only.
