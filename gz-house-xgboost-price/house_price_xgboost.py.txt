@@ -1,0 +1,92 @@
+pip install pandas openpyxl scikit-learn xgboost matplotlib numpy
+# 第一步：数据读取与特征预处理
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error, r2_score
+import xgboost as xgb
+import matplotlib.pyplot as plt
+
+# 1. 加载历史交易数据
+df = pd.read_excel('gz_housing.xlsx')
+
+# 2. 特征工程：对类别型变量`区域类型`进行独热编码
+df_encoded = pd.get_dummies(df, columns=['区域类型'])
+
+# 3. 分离特征矩阵X 和 目标向量y
+X = df_encoded.drop(columns=['房价(万元)'])
+y = df['房价(万元)']
+
+# 4. 数据集划分
+# 按照8:2的比例划分训练集和测试集，固定随机种子以保证结果可复现
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=2025)
+
+print("数据预处理完成。")
+print(f"训练集样本量: {len(X_train)}")
+print(f"测试集样本量: {len(X_test)}")
+print("特征列表:", X.columns.tolist())
+
+# 第二步：构建XGBoost回归模型
+# 初始化XGBoost回归模型
+model = xgb.XGBRegressor(
+    n_estimators=200,        # 迭代次数
+    learning_rate=0.1,       # 步长/学习率
+    max_depth=6,             # 树的深度
+    objective='reg:squarederror', # 损失函数：均方误差
+    n_jobs=-1,               # 并行计算，加速训练
+    random_state=2025
+)
+# 在训练集上拟合模型
+model.fit(X_train, y_train)
+print("XGBoost模型构建与训练完成。")
+
+# 第三步：模型性能评估
+# 对测试集进行预测
+y_pred = model.predict(X_test)
+# 计算评估指标
+r2 = r2_score(y_test, y_pred)
+mse = mean_squared_error(y_test, y_pred)
+rmse = np.sqrt(mse)
+
+print(f"测试集R2分数: {r2:.4f}")
+print(f"测试集RMSE: {rmse:.2f}万元")
+
+# 第四步：特征重要性解析
+# 提取特征重要性并排序
+importance_df = pd.DataFrame({
+    '特征': X.columns,
+    '权重': model.feature_importances_
+}).sort_values(by='权重', ascending=False)
+
+print("广州房价关键影响因素排序：")
+print(importance_df)
+
+# 可视化展示
+plt.rcParams['font.sans-serif'] = ['SimHei'] # 适配中文显示
+plt.figure(figsize=(10, 5))
+plt.barh(importance_df['特征'], importance_df['权重'], color='#1f77b4')
+plt.xlabel('特征权重（Importance）')
+plt.title('XGBoost模型特征重要性分析')
+plt.gca().invert_yaxis() # 翻转Y轴，让最重要的排在最上面
+plt.show()
+
+# 第五步：新房源估价
+# 1. 读取待预测的新房源数据
+df_new = pd.read_excel('gz_housing_pred.xlsx')
+# 2. 预处理：独热编码（必须与训练集保持一致）
+df_new_encoded = pd.get_dummies(df_new, columns=['区域类型'])
+# 3. 对齐列结构：确保新数据的列与模型训练时的列完全一致
+model_features = X.columns
+for col in model_features:
+    if col not in df_new_encoded.columns:
+        df_new_encoded[col] = 0
+# 调整列顺序以匹配模型
+df_new_input = df_new_encoded[model_features]
+# 4. 批量预测
+predicted_prices = model.predict(df_new_input)
+# 5. 输出结果
+df_result = df_new.copy()
+df_result['估值(万元)'] = np.round(predicted_prices, 0) # 取整
+
+print("新房源估价结果（部分展示）：")
+print(df_result[['区域类型', '面积(m2)', '是否学区房', '房龄(年)', '估值(万元)']].head(6))
